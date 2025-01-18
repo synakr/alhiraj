@@ -68,10 +68,12 @@ body {
     word-wrap: break-word;
     white-space: normal;
     overflow-wrap: break-word;
+    background-color: transparent;
 }
 
 .billed-to {
     text-align: left;
+    background-color:antiquewhite;
 }
 
 @media print {
