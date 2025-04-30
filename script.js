@@ -10,8 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const price=amount-(discount/100)*amount;
         const cgst = (gst / 2 / 100) * amount;
         const sgst = (gst / 2 / 100) * amount;
-        //const price2 = (amount + cgst + sgst);
-        //const price3 = price2 - (price2/100)*price2;
         const total = price + cgst + sgst;
         
 
