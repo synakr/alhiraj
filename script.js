@@ -118,7 +118,7 @@ function updateList2() {
             <td><input type="text" class="common"></td>
             <td><input type="text" class="common"></td>
             <td><input type="number" value="1" class="rate common"></td>
-            <td><input type="number" value="2" class="discount common"></td>
+            <td><input type="number" value="0" class="discount common"></td>
             <td><input type="number" readonly class="amount common"></td>
             <td><input type="number" value="18" class="gst common"></td>
             <td><input type="number" readonly class="sgst common"></td>
