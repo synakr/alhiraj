@@ -4,14 +4,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const gst = parseFloat(row.querySelector('.gst').value) || 0;
         const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
         const rate = parseFloat(row.querySelector('.rate').value) || 0;
-        const discount=parseFloat(row.querySelector('.discount').value) || 0;
+        const discount = parseFloat(row.querySelector('.discount').value) || 0;
 
         const amount = quantity * rate;
-        const price=amount-(discount/100)*amount;
         const cgst = (gst / 2 / 100) * amount;
         const sgst = (gst / 2 / 100) * amount;
-        const total = price + cgst + sgst;
-        
+        const totalBeforeDiscount = amount + cgst + sgst;
+        const discountAmount = (discount / 100) * totalBeforeDiscount;
+        const total = totalBeforeDiscount - discountAmount;
 
         row.querySelector('.amount').value = amount.toFixed(2);
         row.querySelector('.discount').value = discount.toFixed(2);
@@ -36,22 +36,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const amount = parseFloat(row.querySelector('.amount').value) || 0;
             const sgst = parseFloat(row.querySelector('.sgst').value) || 0;
             const cgst = parseFloat(row.querySelector('.cgst').value) || 0;
-            const discount=parseFloat(row.querySelector('.discount').value) || 0;
 
             if (gstTotals[gst] !== undefined) {
                 gstTotals[gst].amount += amount;
                 gstTotals[gst].sgst += sgst;
                 gstTotals[gst].cgst += cgst;
-
             }
         });
 
-        // Update the second table with the calculated totals
         Object.keys(gstTotals).forEach(gstClass => {
             document.querySelector(`#class${gstClass} .justTotal`).value = gstTotals[gstClass].amount.toFixed(2);
             document.querySelector(`#class${gstClass} .totalSgst`).value = gstTotals[gstClass].sgst.toFixed(2);
             document.querySelector(`#class${gstClass} .totalCgst`).value = gstTotals[gstClass].cgst.toFixed(2);
-            // Update total for each GST class
             document.querySelector(`#class${gstClass} input[type="number"]:last-child`).value = (gstTotals[gstClass].sgst + gstTotals[gstClass].cgst).toFixed(2);
         });
     }
@@ -67,33 +63,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         document.getElementById('grandTotal').value = grandTotal.toFixed(2);
-        updateList2(); // Update list2 values whenever grand total is updated
+        updateList2();
     }
 
-// Function to update the list2 values dynamically
-function updateList2() {
-    const rows = Array.from(document.querySelectorAll('#itemsTable tbody tr'));
+    // Function to update the list2 values dynamically
+    function updateList2() {
+        const rows = Array.from(document.querySelectorAll('#itemsTable tbody tr'));
 
-    const subTotal = rows.reduce((acc, row) => acc + (parseFloat(row.querySelector('.amount').value) || 0), 0);
+        const subTotal = rows.reduce((acc, row) => acc + (parseFloat(row.querySelector('.amount').value) || 0), 0);
 
-    const gstPayable = Array.from(document.querySelectorAll('#subtable tbody tr'))
-        .reduce((acc, row) => acc + (parseFloat(row.querySelector('input[type="number"]:last-child').value) || 0), 0);
+        const gstPayable = Array.from(document.querySelectorAll('#subtable tbody tr'))
+            .reduce((acc, row) => acc + (parseFloat(row.querySelector('input[type="number"]:last-child').value) || 0), 0);
 
-    const totalDiscount = rows.reduce((acc, row) => {
-        const amount = parseFloat(row.querySelector('.amount').value) || 0;
-        const discountRate = parseFloat(row.querySelector('.discount').value) || 0;
-        return acc + (discountRate / 100) * amount;
-    }, 0);
+        const totalDiscount = rows.reduce((acc, row) => {
+            const amount = parseFloat(row.querySelector('.amount').value) || 0;
+            const cgst = parseFloat(row.querySelector('.cgst').value) || 0;
+            const sgst = parseFloat(row.querySelector('.sgst').value) || 0;
+            const discountRate = parseFloat(row.querySelector('.discount').value) || 0;
+            const totalBeforeDiscount = amount + cgst + sgst;
+            return acc + (discountRate / 100) * totalBeforeDiscount;
+        }, 0);
 
-    const netTotal = document.getElementById('grandTotal').value;
+        const netTotal = document.getElementById('grandTotal').value;
 
-    document.querySelector('.list2 li:nth-child(1)').textContent = `${subTotal.toFixed(2)}`;
-    document.querySelector('.list2 li:nth-child(2)').textContent = `${totalDiscount.toFixed(2)}`; // Add discount amount
-    document.querySelector('.list2 li:nth-child(3)').textContent = `${gstPayable.toFixed(2)}`;
-    document.querySelector('.list2 li:nth-child(5)').textContent = `${netTotal}`;
-    document.querySelector('.list2 li:nth-child(7)').textContent = `${netTotal}`;
-}
-
+        document.querySelector('.list2 li:nth-child(1)').textContent = `${subTotal.toFixed(2)}`;
+        document.querySelector('.list2 li:nth-child(2)').textContent = `${totalDiscount.toFixed(2)}`;
+        document.querySelector('.list2 li:nth-child(3)').textContent = `${gstPayable.toFixed(2)}`;
+        document.querySelector('.list2 li:nth-child(5)').textContent = `${netTotal}`;
+        document.querySelector('.list2 li:nth-child(7)').textContent = `${netTotal}`;
+    }
 
     // Add event listeners for real-time calculation
     document.querySelectorAll('#itemsTable input').forEach(input => {
@@ -101,7 +99,7 @@ function updateList2() {
             const row = event.target.closest('tr');
             calculateRow(row);
             updateGrandTotal();
-            updateTaxTotals(); // Also update SGST and CGST totals
+            updateTaxTotals();
         });
     });
 
@@ -126,31 +124,29 @@ function updateList2() {
             <td><input type="number" readonly class="total common"></td>
         `;
 
-        // Add event listeners for the new row
         newRow.querySelectorAll('input').forEach(input => {
             input.addEventListener('input', (event) => {
                 const row = event.target.closest('tr');
                 calculateRow(row);
                 updateGrandTotal();
-                updateTaxTotals(); // Also update SGST and CGST totals
+                updateTaxTotals();
             });
         });
     });
 
-    // For date-issue
     document.getElementById('generatePDF').addEventListener('click', function() {
         const dateInputs = document.querySelectorAll('input[type="date"]');
         dateInputs.forEach(dateInput => {
             const dateValue = dateInput.value;
-            dateInput.type = 'text'; // Temporarily change the input type to text
-            dateInput.value = dateValue; // Set the text value
-            dateInput.type = 'date'; // Change back to date input after printing
+            dateInput.type = 'text';
+            dateInput.value = dateValue;
+            dateInput.type = 'date';
         });
-        window.print(); // Generate the PDF
+        window.print();
     });
 
-    // Call the functions on page load to ensure proper initialization
+    // Initial calculations on page load
     updateGrandTotal();
     updateTaxTotals();
-    updateList2(); // Initialize list2 values on page load
+    updateList2();
 });
