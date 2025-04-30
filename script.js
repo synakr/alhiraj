@@ -7,10 +7,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const discount=parseFloat(row.querySelector('.discount').value) || 0;
 
         const amount = quantity * rate;
-        const price=amount-(discount/100)*amount;
+        //const price=amount-(discount/100)*amount;
         const cgst = (gst / 2 / 100) * amount;
         const sgst = (gst / 2 / 100) * amount;
-        const total = price + cgst + sgst;
+        const price2 = (amount + cgst + sgst);
+        const price3 = price2 - (price2/100)*price2;
+        //const total = price + cgst + sgst;
+        const total = price3;
         
 
         row.querySelector('.amount').value = amount.toFixed(2);
